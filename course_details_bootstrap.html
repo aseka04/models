@@ -1,0 +1,46 @@
+{% extends "onlinecourse/base.html" %}
+{% block title %}{{ course.name }} | OnlineCourse{% endblock %}
+{% block content %}
+<div class="mb-4">
+  <a href="{% url 'course_list' %}" class="text-decoration-none">&larr; All courses</a>
+  <h1 class="mt-2">{{ course.name }}</h1>
+  <p class="lead">{{ course.description }}</p>
+</div>
+
+<section class="card mb-4"><div class="card-body">
+  <h2 class="h4">Course lessons</h2>
+  {% for lesson in course.lessons.all %}
+    <article class="border-bottom py-3">
+      <h3 class="h6">{{ forloop.counter }}. {{ lesson.title }}</h3>
+      <p class="mb-0">{{ lesson.content|linebreaksbr }}</p>
+    </article>
+  {% empty %}
+    <p class="text-secondary">No lessons have been added yet.</p>
+  {% endfor %}
+</div></section>
+
+<section class="card"><div class="card-body">
+  <h2 class="h4 mb-3">Practice exam</h2>
+  {% if course.questions.exists %}
+  <form method="post" action="{% url 'submit' course.id %}">
+    {% csrf_token %}
+    {% for question in course.questions.all %}
+      <fieldset class="mb-4">
+        <legend class="h6">{{ forloop.counter }}. {{ question.question_text }} <span class="text-secondary">({{ question.grade }} point{{ question.grade|pluralize }})</span></legend>
+        {% for choice in question.choices.all %}
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="choice_{{ choice.id }}" value="{{ choice.id }}">
+            <label class="form-check-label" for="choice_{{ choice.id }}">{{ choice.choice_text }}</label>
+          </div>
+        {% empty %}
+          <p class="text-warning">No choices added for this question.</p>
+        {% endfor %}
+      </fieldset>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Submit exam</button>
+  </form>
+  {% else %}
+    <p class="text-secondary">No exam questions are available yet. Add questions in the admin site.</p>
+  {% endif %}
+</div></section>
+{% endblock %}
